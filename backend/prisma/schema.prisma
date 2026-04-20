@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum RoomType {
+  SINGLE
+  DOUBLE
+  SUITE
+  DELUXE
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+}
+
+enum BookingStatus {
+  PENDING
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  carts    Cart[]
+  bookings Booking[]
+}
+
+model Room {
+  id          Int        @id @default(autoincrement())
+  name        String
+  type        RoomType
+  price       Float
+  description String?
+  imageUrl    String?
+  status      RoomStatus @default(AVAILABLE)
+  maxGuests   Int        @default(2)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  carts          Cart[]
+  bookingDetails BookingDetail[]
+}
+
+model Cart {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  roomId      Int
+  checkInDate DateTime
+  checkOutDate DateTime
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([roomId])
+}
+
+model Booking {
+  id           Int          @id @default(autoincrement())
+  userId       Int
+  checkInDate  DateTime
+  checkOutDate DateTime
+  status       BookingStatus @default(PENDING)
+  totalAmount  Float
+  customerNote String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingDetails BookingDetail[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model BookingDetail {
+  id             Int    @id @default(autoincrement())
+  bookingId      Int
+  roomId         Int
+  priceAtBooking Float
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([roomId])
+}
