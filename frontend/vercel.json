@@ -12,6 +12,10 @@
     {
       "source": "/uploads/:path*",
       "destination": "https://hotel-management-1ex6.onrender.com/uploads/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
     }
   ]
 }

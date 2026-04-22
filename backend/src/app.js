@@ -33,6 +33,23 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Hotel Management API is running" });
 });
 
+// Root route - API info
+app.get("/", (req, res) => {
+  res.json({
+    name: "Hotel Management API",
+    version: "1.0.0",
+    status: "running",
+    endpoints: {
+      health: "/api/health",
+      auth: "/api/auth/*",
+      rooms: "/api/rooms",
+      cart: "/api/cart",
+      bookings: "/api/bookings",
+    },
+    documentation: "https://github.com/Tuan0109-bodoi/Hotel-Management",
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
