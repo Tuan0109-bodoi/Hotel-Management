@@ -9,6 +9,8 @@ backend/generated/
 
 # Environment variables
 backend/.env
+frontend/.env.local
+frontend/.env.*.local
 
 # Uploads (except room images)
 backend/uploads/*
