@@ -10,8 +10,10 @@ backend/generated/
 # Environment variables
 backend/.env
 
-# Uploads
-backend/uploads/
+# Uploads (except room images)
+backend/uploads/*
+!backend/uploads/rooms/
+!backend/uploads/.gitkeep
 
 # OS files
 .DS_Store

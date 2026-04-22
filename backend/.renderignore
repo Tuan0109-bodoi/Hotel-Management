@@ -1,0 +1,18 @@
+# Don't deploy frontend to backend service
+frontend/
+
+# Development files
+download-images.js
+*.md
+
+# Local uploads (don't commit)
+uploads/*
+!uploads/.gitkeep
+
+# Git
+.git/
+.gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
