@@ -5,100 +5,106 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
-model booking {
-  id            Int             @id @default(autoincrement())
-  userId        Int
-  checkInDate   DateTime
-  checkOutDate  DateTime
-  status        booking_status  @default(PENDING)
-  totalAmount   Float
-  customerNote  String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime
-  user          user            @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Booking_userId_fkey")
-  bookingdetail bookingdetail[]
-
-  @@index([status], map: "Booking_status_idx")
-  @@index([userId], map: "Booking_userId_idx")
+enum Role {
+  CUSTOMER
+  ADMIN
 }
 
-model bookingdetail {
-  id             Int     @id @default(autoincrement())
-  bookingId      Int
-  roomId         Int
-  priceAtBooking Float
-  booking        booking @relation(fields: [bookingId], references: [id], onDelete: Cascade, map: "BookingDetail_bookingId_fkey")
-  room           room    @relation(fields: [roomId], references: [id], onDelete: Cascade, map: "BookingDetail_roomId_fkey")
-
-  @@index([bookingId], map: "BookingDetail_bookingId_idx")
-  @@index([roomId], map: "BookingDetail_roomId_idx")
-}
-
-model cart {
-  id           Int      @id @default(autoincrement())
-  userId       Int
-  roomId       Int
-  checkInDate  DateTime
-  checkOutDate DateTime
-  createdAt    DateTime @default(now())
-  room         room     @relation(fields: [roomId], references: [id], onDelete: Cascade, map: "Cart_roomId_fkey")
-  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Cart_userId_fkey")
-
-  @@index([roomId], map: "Cart_roomId_idx")
-  @@index([userId], map: "Cart_userId_idx")
-}
-
-model room {
-  id            Int             @id @default(autoincrement())
-  name          String
-  type          room_type
-  price         Float
-  description   String?
-  imageUrl      String?
-  status        room_status     @default(AVAILABLE)
-  maxGuests     Int             @default(2)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime
-  bookingdetail bookingdetail[]
-  cart          cart[]
-}
-
-model user {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique(map: "User_email_key")
-  password  String
-  phone     String?
-  role      user_role @default(CUSTOMER)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime
-  booking   booking[]
-  cart      cart[]
-}
-
-enum room_type {
+enum RoomType {
   SINGLE
   DOUBLE
   SUITE
   DELUXE
 }
 
-enum booking_status {
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+}
+
+enum BookingStatus {
   PENDING
   CHECKED_IN
   CHECKED_OUT
   CANCELLED
 }
 
-enum user_role {
-  CUSTOMER
-  ADMIN
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  carts    Cart[]
+  bookings Booking[]
 }
 
-enum room_status {
-  AVAILABLE
-  OCCUPIED
-  MAINTENANCE
+model Room {
+  id          Int        @id @default(autoincrement())
+  name        String
+  type        RoomType
+  price       Float
+  description String?
+  imageUrl    String?
+  status      RoomStatus @default(AVAILABLE)
+  maxGuests   Int        @default(2)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  bookingDetails BookingDetail[]
+  carts          Cart[]
+}
+
+model Booking {
+  id           Int            @id @default(autoincrement())
+  userId       Int
+  checkInDate  DateTime
+  checkOutDate DateTime
+  status       BookingStatus  @default(PENDING)
+  totalAmount  Float
+  customerNote String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  details BookingDetail[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model BookingDetail {
+  id             Int     @id @default(autoincrement())
+  bookingId      Int
+  roomId         Int
+  priceAtBooking Float
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([roomId])
+}
+
+model Cart {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  roomId       Int
+  checkInDate  DateTime
+  checkOutDate DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([roomId])
 }
